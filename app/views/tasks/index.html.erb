@@ -1,0 +1,166 @@
+<h1>To-Do List</h1>
+
+<!-- Filter buttons -->
+<div class="filters">
+  <%= link_to "All", root_path(filter: 'all'), class: @filter == 'all' ? 'active' : '' %>
+  <%= link_to "Active", root_path(filter: 'active'), class: @filter == 'active' ? 'active' : '' %>
+  <%= link_to "Completed", root_path(filter: 'completed'), class: @filter == 'completed' ? 'active' : '' %>
+</div>
+
+<!-- New task form -->
+<div class="new-task-form">
+  <input type="text" id="new-task-input" placeholder="Enter a new task...">
+  <button id="add-task-btn">Add Task</button>
+</div>
+
+<!-- Tasks list -->
+<ul id="tasks-list"></ul>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Load tasks when page loads
+    loadTasks();
+    
+    // Add new task
+    document.getElementById('add-task-btn').addEventListener('click', function() {
+      addNewTask();
+    });
+
+    // Allow pressing Enter to add task
+    document.getElementById('new-task-input').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        addNewTask();
+      }
+    });
+
+    function addNewTask() {
+      const description = document.getElementById('new-task-input').value.trim();
+      if (description) {
+        createTask(description);
+        document.getElementById('new-task-input').value = '';
+      }
+    }
+  });
+
+  function loadTasks() {
+    fetch('/tasks.json?filter=<%= @filter %>')
+      .then(response => response.json())
+      .then(tasks => {
+        const tasksList = document.getElementById('tasks-list');
+        tasksList.innerHTML = '';
+        
+        tasks.forEach(task => {
+          const li = document.createElement('li');
+          li.dataset.id = task.id;
+          li.className = task.completed ? 'completed' : '';
+          
+          li.innerHTML = `
+            <span class="task-description">${task.description}</span>
+            <button class="toggle-btn">${task.completed ? 'Mark Active' : 'Mark Complete'}</button>
+            <button class="delete-btn">Remove</button>
+          `;
+          
+          // Add event listeners
+          const toggleBtn = li.querySelector('.toggle-btn');
+          toggleBtn.addEventListener('click', () => {
+            toggleTask(task.id, !task.completed);
+          });
+          
+          const deleteBtn = li.querySelector('.delete-btn');
+          deleteBtn.addEventListener('click', () => {
+            deleteTask(task.id);
+          });
+          
+          tasksList.appendChild(li);
+        });
+      })
+      .catch(error => {
+        console.error('Error loading tasks:', error);
+      });
+  }
+
+function createTask(description) {
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+    fetch('/tasks', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+      },
+      body: JSON.stringify({ 
+        task: { 
+          description: description,
+          completed: false 
+        } 
+      })
+    })
+    .then(response => {
+      console.log('Response status:', response.status);
+
+      if (!response.ok) {
+        return response.json().then(errorData => {
+          console.error('Server error:', errorData);
+          throw new Error(errorData.errors ? errorData.errors.join(', ') : 'Failed to create task');
+        });
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('Task created:', data);
+      loadTasks();
+    })
+    .catch(error => {
+      console.error('Error creating task:', error);
+      alert('Failed to create task: ' + error.message);
+    });
+  }
+
+  function toggleTask(id, completed) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+    
+    fetch(`/tasks/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-CSRF-Token': csrfToken
+      },
+      body: JSON.stringify({ task: { completed } })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(() => {
+      loadTasks();
+    })
+    .catch(error => {
+      console.error('Error updating task:', error);
+    });
+  }
+
+  function deleteTask(id) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+    
+    fetch(`/tasks/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRF-Token': csrfToken
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      loadTasks();
+    })
+    .catch(error => {
+      console.error('Error deleting task:', error);
+    });
+  }
+</script>

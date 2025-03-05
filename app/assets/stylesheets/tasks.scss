@@ -1,3 +1,335 @@
-// Place all the styles related to the Tasks controller here.
-// They will automatically be included in application.css.
-// You can use Sass (SCSS) here: https://sass-lang.com/
+/* Base Styles */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  color: #333;
+  transition: background-color 0.3s ease;
+}
+
+h1 {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 30px;
+  font-weight: 300;
+  font-size: 2.5em;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 10px;
+}
+
+/* Navbar Styles */
+.navbar {
+  background-color: #2c3e50;
+  padding: 15px;
+  margin-bottom: 30px;
+  color: white;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.navbar:hover {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.navbar span {
+  margin-right: auto;
+  padding-left: 20px;
+  font-weight: 500;
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  margin-left: 20px;
+  padding: 8px 15px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Notification Styles */
+.notice, .alert {
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  animation: fadeIn 0.5s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.notice {
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+  color: #155724;
+}
+
+.alert {
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+  color: #721c24;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Filters Style */
+.filters {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+  background-color: white;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.filters a {
+  margin: 0 15px;
+  text-decoration: none;
+  color: #666;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.filters a:hover {
+  background-color: #f1f1f1;
+  color: #333;
+}
+
+.filters a.active {
+  font-weight: 600;
+  color: #fff;
+  background-color: #3498db;
+  box-shadow: 0 2px 5px rgba(52, 152, 219, 0.3);
+}
+
+.filters a.active:hover {
+  background-color: #2980b9;
+}
+
+/* New Task Form */
+.new-task-form {
+  display: flex;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.new-task-form:focus-within {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+#new-task-input {
+  flex: 1;
+  padding: 14px;
+  font-size: 16px;
+  border: none;
+  outline: none;
+  transition: background-color 0.2s ease;
+}
+
+#new-task-input:focus {
+  background-color: #f9f9f9;
+}
+
+#add-task-btn {
+  padding: 14px 24px;
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+#add-task-btn:hover {
+  background-color: #219653;
+}
+
+#add-task-btn:active {
+  transform: scale(0.98);
+}
+
+/* Tasks List */
+#tasks-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+#tasks-list li {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  animation: slideIn 0.3s ease;
+}
+
+#tasks-list li:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#tasks-list li.completed {
+  background-color: #f8f9fa;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+}
+
+#tasks-list li.completed .task-description {
+  text-decoration: line-through;
+  color: #6c757d;
+}
+
+.task-description {
+  flex: 1;
+  font-size: 16px;
+  transition: color 0.2s ease;
+}
+
+/* Task Buttons */
+button {
+  margin-left: 10px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+.toggle-btn {
+  background-color: #3498db;
+  color: white;
+}
+
+.toggle-btn:hover {
+  background-color: #2980b9;
+}
+
+.delete-btn {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.delete-btn:hover {
+  background-color: #c0392b;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  body {
+    padding: 10px;
+  }
+
+  h1 {
+    font-size: 1.8em;
+  }
+
+  .filters {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .filters a {
+    margin: 5px 0;
+    width: 80%;
+    text-align: center;
+  }
+
+  .new-task-form {
+    flex-direction: column;
+  }
+
+  #new-task-input {
+    width: 100%;
+    border-radius: 8px 8px 0 0;
+  }
+
+  #add-task-btn {
+    width: 100%;
+    border-radius: 0 0 8px 8px;
+  }
+
+  #tasks-list li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .task-description {
+    margin-bottom: 10px;
+    font-size: 18px;
+  }
+
+  button {
+    margin: 5px 5px 5px 0;
+  }
+}
+
+/* Dark mode toggle - you can add this feature later */
+.dark-mode {
+  background-color: #222;
+  color: #eee;
+}
+
+.dark-mode h1 {
+  color: #eee;
+  border-bottom-color: #444;
+}
+
+.dark-mode .filters, 
+.dark-mode #tasks-list li,
+.dark-mode #new-task-input {
+  background-color: #333;
+  color: #eee;
+}
+
+.dark-mode .filters a {
+  color: #bbb;
+}
+
+.dark-mode .filters a:hover {
+  background-color: #444;
+  color: #fff;
+}
+
+.dark-mode #tasks-list li.completed {
+  background-color: #2c2c2c;
+}
+
+.dark-mode #tasks-list li.completed .task-description {
+  color: #888;
+}

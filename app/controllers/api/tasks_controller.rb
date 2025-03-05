@@ -1,92 +1,101 @@
 module Api
-class TasksController < ApplicationController
-  before_action :validate_user
+  class TasksController < ApplicationController
+    before_action :authenticate_user!
+    skip_before_action :verify_authenticity_token
+    before_action :set_task, only: [:update, :destroy]
+  
+    # global error handling
+    rescue_from StandardError, with: :handle_error
 
-  def show
-    user = User.find_by(id: params[:api_key])
-    @task = user.tasks.find_by(id: params[:id])
+    def index
+      @tasks = current_user.tasks
+      @filter = params[:filter] || 'all'
+      
+      @tasks = case @filter
+        when 'active'
+          @tasks.where(completed: false)
+        when 'completed'
+          @tasks.where(completed: true)
+        else
+          @tasks
+        end
+        
+      respond_to do |format|
+        format.html
+        format.json { render json: @tasks }
+      end
+    end
+  
+    def create
+          # Detailed logging
+    Rails.logger.debug "Create task params: #{params.inspect}"
+    
+    begin
+      @task = current_user.tasks.build(task_params)
+      
+      if @task.save
+        render json: @task, status: :created
 
-    return render 'not_found', status: :not_found unless @task
-
-    render 'show', status: :ok
-  end
-
-  def index
-    user = User.find_by(id: params[:api_key])
-    @tasks = user.tasks.all
-    render 'index', status: :ok
-  end
-
-  def create
-    user = User.find_by(id: params[:api_key])
-    @task = user.tasks.new(task_params)
-
-    return render 'bad_request', status: :bad_request unless @task.save
-
-    render 'show', status: :ok
-  end
-
-  def destroy
-    user = User.find_by(id: params[:api_key])
-    @task = user.tasks.find_by(id: params[:id])
-
-    return render 'not_found', status: :not_found unless @task
-    return render 'bad_request', status: :bad_request unless @task.destroy
-
-    render json: { success: true }, status: :ok
-  end
-
-  def update
-    user = User.find_by(id: params[:api_key])
-    @task = user.tasks.find_by(id: params[:id])
-
-    return render 'not_found', status: :not_found unless @task
-    return render 'bad_request', status: :bad_request unless @task.update(task_params)
-
-    render 'show', status: :ok
-  end
-
-  def mark_complete
-    user = User.find_by(id: params[:api_key])
-    @task = user.tasks.find_by(id: params[:id])
-
-    return render 'not_found', status: :not_found unless @task
-    return render 'bad_request', status: :bad_request unless @task.update(completed: true)
-
-    render 'show', status: :ok
-  end
-
-  def mark_active
-    user = User.find_by(id: params[:api_key])
-    @task = user.tasks.find_by(id: params[:id])
-
-    return render 'not_found', status: :not_found unless @task
-    return render 'bad_request', status: :bad_request unless @task.update(completed: false)
-
-    render 'show', status: :ok
+      else
+        # Log and render validation errors
+        Rails.logger.error "Task creation failed: #{@task.errors.full_messages}"
+        render json: { 
+          errors: @task.errors.full_messages,
+          task_params: task_params
+        }, status: :unprocessable_entity
+      end
+    rescue => e
+      # Log any unexpected errors
+      Rails.logger.error "Unexpected error in task creation: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
+      
+      render json: { 
+        errors: ["Unexpected error: #{e.message}"]
+      }, status: :internal_server_error
+    end
   end
 
   private
 
   def task_params
-    params.require(:task).permit(:content, :due)
+    params.require(:task).permit(:description, :completed)
   end
 
-  def validate_user
-    user = User.find_by(id: params[:api_key])
-    unless user
-      return render json: {
-        status: '401',
-        title: 'Unauthorized User',
-        detail: 'User is not found.'
-      }, status: :unauthorized
-    end
+  # Global error handler
+  def handle_error(exception)
+    Rails.logger.error "Unhandled error: #{exception.message}"
+    Rails.logger.error exception.backtrace.join("\n")
 
-    if user
-      true
-    else
-      false
-    end
+    render json: { 
+      errors: ["An unexpected error occurred: #{exception.message}"]
+    }, status: :internal_server_error
   end
 end
-end
+  
+    def update
+      if @task.user == current_user && @task.update(task_params)
+        render json: @task
+      else
+        render json: @task.errors, status: :unprocessable_entity
+      end
+    end
+  
+    def destroy
+      if @task.user == current_user
+        @task.destroy
+        head :no_content
+      else
+        head :unauthorized
+      end
+    end
+  
+    private
+    
+    def set_task
+      @task = Task.find(params[:id])
+    end
+  
+    def task_params
+      params.require(:task).permit(:description, :completed)
+    end
+  end
