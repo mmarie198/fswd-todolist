@@ -27,7 +27,7 @@ module Api
     end
   
     def create
-          # Detailed logging
+    # Detailed logging
     Rails.logger.debug "Create task params: #{params.inspect}"
     
     begin

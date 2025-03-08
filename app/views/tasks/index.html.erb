@@ -1,19 +1,18 @@
 <h1>To-Do List</h1>
 
-<!-- Filter buttons -->
 <div class="filters">
   <%= link_to "All", root_path(filter: 'all'), class: @filter == 'all' ? 'active' : '' %>
   <%= link_to "Active", root_path(filter: 'active'), class: @filter == 'active' ? 'active' : '' %>
   <%= link_to "Completed", root_path(filter: 'completed'), class: @filter == 'completed' ? 'active' : '' %>
 </div>
 
-<!-- New task form -->
+
 <div class="new-task-form">
   <input type="text" id="new-task-input" placeholder="Enter a new task...">
   <button id="add-task-btn">Add Task</button>
 </div>
 
-<!-- Tasks list -->
+
 <ul id="tasks-list"></ul>
 
 <script>
